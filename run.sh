@@ -130,6 +130,45 @@ function checkStraightFlush() {
    return
 }
 
+function checkFlush() {
+   local arr=($@)
+
+   size=${#arr[@]}
+   result=0
+   i=0
+   sum=0
+   arrIndexes=()
+   while [ $i -lt $size ]; do
+      # echo ${arr[$i]}
+      if ((${arr[$i]} == 1)); then
+         sum=$(($sum + 1))
+         arrIndexes+=($i)
+
+         if (($sum == 5)); then
+            break
+         fi
+      fi
+      i=$(($i + 1))
+   done
+
+   # echo "sum - $sum"
+
+   if (($sum == 5)); then
+      curResult1=$(($sizeArrCards - ${arrIndexes[0]} + 1))
+      curResult1=$(multiplication $curResult1 1000000)
+
+      curResult2=$(round $(($sizeArrCards - ${arrIndexes[1]} + 1)) 100 2)
+      curResult2=$(multiplication $curResult2 1000000)
+      curResult2=$(round $curResult2 1 0)
+
+      result=$(($curResult1 + $curResult2))
+      # break
+   fi
+
+   echo $(($result))
+   return
+}
+
 arrGameTypes=("texas-holdem" "omaha-holdem" "five-card-draw")
 arrCards=("A" "K" "Q" "J" "T" "9" "8" "7" "6" "5" "4" "3" "2")
 arrSuits=("h" "d" "c" "s")
@@ -226,31 +265,28 @@ for curPokerHand in ${arrPokerHands[@]}; do
       fi
       j=$(($j + 2))
    done
-   # echo ${arrCardsBySuit_h[@]}
-   # echo ${arrCardsBySuit_d[@]}
-   # echo ${arrCardsBySuit_c[@]}
-   # echo ${arrCardsBySuit_s[@]}
+   echo ${arrCardsBySuit_h[@]}
+   echo ${arrCardsBySuit_d[@]}
+   echo ${arrCardsBySuit_c[@]}
+   echo ${arrCardsBySuit_s[@]}
    result=0
 
    # *********************************************************
    #  check 'Straight Flush' ...
-   k=0
-   while [ $k -lt ${#arrSuits[@]} ]; do
-      arrCardsBySuit_a=arrCardsBySuit_${arrSuits[$k]}[@]
+   for suit in ${arrSuits[@]}; do
+      arrCardsBySuit_a=arrCardsBySuit_$suit[@]
       curArrCardsBySuit=${!arrCardsBySuit_a} # get current array by suit (for example, arrCardsBySuit_h ...)
 
       result=$(checkStraightFlush "${curArrCardsBySuit[@]}")
       if (($result > 0)); then
          break
-      fi
-      k=$(($k + 1))
+      fi      
    done
 
    echo "check 'Straight Flush' ... $result"
 
    if (($result > 0)); then
       arrResult+=($result)
-      i=$(($i + 1))
       continue
    fi
    # *********************************************************
@@ -293,16 +329,13 @@ for curPokerHand in ${arrPokerHands[@]}; do
 
    if (($result != 0)); then
       arrResult+=($result)
-      i=$(($i + 1))
       continue
    fi
    # *********************************************************
 
    # *********************************************************
    #  check 'Full House' ...
-   curResult=0
    curResult2=0
-   curFloatResult2=0
    curResult3=0
    for index in ${!arrCards[@]}; do
       sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
@@ -320,7 +353,7 @@ for curPokerHand in ${arrPokerHands[@]}; do
             curResult2=$(round $(($sizeArrCards - $index + 1)) 100 2)
             curResult2=$(multiplication $curResult2 10000000)
             curResult2=$(round $curResult2 1 0)
-            echo $curResult2
+            # echo $curResult2
             break
          fi
       done
@@ -335,12 +368,31 @@ for curPokerHand in ${arrPokerHands[@]}; do
 
    if (($result != 0)); then
       arrResult+=($result)
-      i=$(($i + 1))
       continue
    fi
    # *********************************************************
 
-   echo ${arrResult[@]}
+   # *********************************************************
+   #  check 'Flush' ...
+   for suit in ${arrSuits[@]}; do
+      arrCardsBySuit_a=arrCardsBySuit_$suit[@]
+      curArrCardsBySuit=${!arrCardsBySuit_a} # get current array by suit (for example, arrCardsBySuit_h ...)
+      
+      result=$(checkFlush "${curArrCardsBySuit[@]}")      
+      if (($result > 0)); then
+         break
+      fi
+   done
+
+   echo "check 'Flush' ... $result"
+
+   if (($result != 0)); then
+      arrResult+=($result)
+      continue
+   fi
+   # *********************************************************
+
+   # echo ${arrResult[@]}
    # break
 done
 
