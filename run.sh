@@ -88,6 +88,38 @@ function checkStrCards() {
    return
 }
 
+function checkStraightFlush() {
+   local arr=($@)
+
+   size=${#arr[@]}
+   result=0
+   i=0
+   sum=0
+   while [ $i -lt $size ]; do
+      if (($(($i + 4)) > $size)); then
+         break
+
+      elif (($(($i + 4)) == $size)); then
+         sum=$((${arr[$i]} + ${arr[$i + 1]} + ${arr[$i + 2]} + ${arr[$i + 3]} + ${arr[0]}))
+         if (($sum == 5)); then
+            result=$(($size - $i + 1))
+            break
+         fi
+
+      else
+         sum=$((${arr[$i]} + ${arr[$i + 1]} + ${arr[$i + 2]} + ${arr[$i + 3]} + ${arr[$i + 4]}))
+         if (($sum == 5)); then
+            result=$(($size - $i + 1))
+            break
+         fi
+      fi
+      i=$(($i + 1))
+   done
+
+   echo $(($result * 1000000000))
+   return
+}
+
 arrGameTypes=("texas-holdem" "omaha-holdem" "five-card-draw")
 arrCards=("A" "K" "Q" "J" "T" "9" "8" "7" "6" "5" "4" "3" "2")
 arrSuits=("h" "d" "c" "s")
@@ -149,11 +181,11 @@ arrResult=()
 i=0
 while [ $i -lt ${#arrPokerHands[@]} ]; do
    curPokerHand=${arrPokerHands[i]}
-
-   arrCardsBySuitH=(0 0 0 0 0 0 0 0 0 0 0 0 0) # h ...
-   arrCardsBySuitD=(0 0 0 0 0 0 0 0 0 0 0 0 0) # d ...
-   arrCardsBySuitC=(0 0 0 0 0 0 0 0 0 0 0 0 0) # c ...
-   arrCardsBySuitS=(0 0 0 0 0 0 0 0 0 0 0 0 0) # s ...
+   echo $curPokerHand
+   arrCardsBySuit_h=(0 0 0 0 0 0 0 0 0 0 0 0 0) # h ...
+   arrCardsBySuit_d=(0 0 0 0 0 0 0 0 0 0 0 0 0) # d ...
+   arrCardsBySuit_c=(0 0 0 0 0 0 0 0 0 0 0 0 0) # c ...
+   arrCardsBySuit_s=(0 0 0 0 0 0 0 0 0 0 0 0 0) # s ...
 
    curCards=$boardCards
    curCards+=$curPokerHand
@@ -161,38 +193,63 @@ while [ $i -lt ${#arrPokerHands[@]} ]; do
    j=0
    while [ $j -lt ${#curCards} ]; do
       curFullCard=${curCards:$j:2} # get the current full card (for example, 4c) ...
-      echo $curFullCard
+      # echo $curFullCard
 
       curCard=${curFullCard:0:1}                               # get the current card ...
       curSuit=${curFullCard:1:2}                               # get the suit of the current cards ...
       indexCard=$(getIndexInArray "$curCard" "${arrCards[@]}") # check the current card ...
       indexSuit=$(getIndexInArray "$curSuit" "${arrSuits[@]}") # check the current suit ...
 
-      if [ "$indexSuit" == 0 ]; then
-         arrCardsBySuitH[$indexCard]=1
+      if (($indexSuit == 0)); then
+         arrCardsBySuit_h[$indexCard]=1
 
-      elif [ "$indexSuit" == 1 ]; then
-         arrCardsBySuitD[$indexCard]=1
+      elif (($indexSuit == 1)); then
+         arrCardsBySuit_d[$indexCard]=1
 
-      elif [ "$indexSuit" == 2 ]; then
-         arrCardsBySuitC[$indexCard]=1
+      elif (($indexSuit == 2)); then
+         arrCardsBySuit_c[$indexCard]=1
 
-      elif [ "$indexSuit" == 3 ]; then
-
-         arrCardsBySuitS[$indexCard]=1
+      elif (($indexSuit == 3)); then
+         arrCardsBySuit_s[$indexCard]=1
       fi
-
       j=$(($j + 2))
    done
+   # echo ${arrCardsBySuit_s[@]}
+   result=0
 
-   echo ${arrCardsBySuitH[@]}
-   echo ${arrCardsBySuitD[@]}
-   echo ${arrCardsBySuitC[@]}
-   echo ${arrCardsBySuitS[@]}
+   # *********************************************************
+   #  check 'Straight Flush' ...
+   k=0
+   while [ $k -lt ${#arrSuits[@]} ]; do
+      arrCardsBySuit_a=arrCardsBySuit_${arrSuits[$k]}[@]
+      curArrCardsBySuit=${!arrCardsBySuit_a} # get current array by suit (for example, arrCardsBySuit_h ...)
 
+      result=$(checkStraightFlush "${curArrCardsBySuit[@]}")
+      if (($result > 0)); then
+         break
+      fi
+      k=$(($k + 1))
+   done
+
+   if (($result > 0)); then
+      arrResult+=($result)
+      i=$(($i + 1))
+      continue
+   fi
+   # *********************************************************
+
+   # *********************************************************
+   #  check 'Straight Flush' ...
+   k=0
+
+   # *********************************************************
+
+   # echo ${arrResult[@]}
    i=$(($i + 1))
    break
 done
+
+echo "arrResult - ${arrResult[@]}"
 
 # a1=(1 2 3 4 5 6)
 # a2=("A" "B" "C" "D" "E")
