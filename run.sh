@@ -10,6 +10,16 @@
 #a "$line"
 #done
 
+function round() {   
+   echo "scale=$3;$1/$2" | bc -l
+   return
+}
+
+function multiplication() {
+   echo "$1*$2" | bc -l
+   return
+}
+
 function elementInArray() {
    local element=$1
    shift
@@ -125,6 +135,8 @@ arrCards=("A" "K" "Q" "J" "T" "9" "8" "7" "6" "5" "4" "3" "2")
 arrSuits=("h" "d" "c" "s")
 arrPokerHands=()
 
+sizeArrCards=${#arrCards[@]}
+
 read str
 IFS=" " read -ra arrWords <<<"$str" # get the array of words ...
 
@@ -214,9 +226,12 @@ while [ $i -lt ${#arrPokerHands[@]} ]; do
       fi
       j=$(($j + 2))
    done
+   # echo ${arrCardsBySuit_h[@]}
+   # echo ${arrCardsBySuit_d[@]}
+   # echo ${arrCardsBySuit_c[@]}
    # echo ${arrCardsBySuit_s[@]}
    result=0
-
+   
    # *********************************************************
    #  check 'Straight Flush' ...
    k=0
@@ -239,9 +254,44 @@ while [ $i -lt ${#arrPokerHands[@]} ]; do
    # *********************************************************
 
    # *********************************************************
-   #  check 'Straight Flush' ...
-   k=0
+   #  check 'Four of a kind' ...
+   curResult=0
+   for index in ${!arrCards[@]}; do
+      sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+      if (($sum == 4)); then
+         curResult=$(($sizeArrCards - $index + 1))
+         arrCardsBySuit_h[$index]=0
+         arrCardsBySuit_d[$index]=0
+         arrCardsBySuit_c[$index]=0
+         arrCardsBySuit_s[$index]=0
+         break
+      fi
+   done
+   # echo "-----------------------------"
+   # echo ${arrCardsBySuit_h[@]}
+   # echo ${arrCardsBySuit_d[@]}
+   # echo ${arrCardsBySuit_c[@]}
+   # echo ${arrCardsBySuit_s[@]}
 
+   if (($curResult > 0)); then
+      # find a card of the maximum rank ...
+      for index in ${!arrCards[@]}; do
+         sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+         if (($sum > 0)); then
+            curResult+=$(round $(($sizeArrCards - $index + 1)) 100 2)
+            # echo $curResult
+            break
+         fi
+      done
+      result=$(multiplication $curResult 100000000)
+      result=$(round $result 1 0)      
+   fi
+
+   if (($result != 0)); then
+      arrResult+=($result)
+      i=$(($i + 1))
+      continue
+   fi
    # *********************************************************
 
    # echo ${arrResult[@]}
