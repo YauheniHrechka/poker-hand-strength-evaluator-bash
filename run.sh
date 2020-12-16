@@ -10,7 +10,7 @@
 #a "$line"
 #done
 
-function round() {   
+function round() {
    echo "scale=$3;$1/$2" | bc -l
    return
 }
@@ -191,9 +191,9 @@ done
 arrResult=()
 
 i=0
-while [ $i -lt ${#arrPokerHands[@]} ]; do
-   curPokerHand=${arrPokerHands[i]}
+for curPokerHand in ${arrPokerHands[@]}; do
    echo $curPokerHand
+
    arrCardsBySuit_h=(0 0 0 0 0 0 0 0 0 0 0 0 0) # h ...
    arrCardsBySuit_d=(0 0 0 0 0 0 0 0 0 0 0 0 0) # d ...
    arrCardsBySuit_c=(0 0 0 0 0 0 0 0 0 0 0 0 0) # c ...
@@ -231,7 +231,7 @@ while [ $i -lt ${#arrPokerHands[@]} ]; do
    # echo ${arrCardsBySuit_c[@]}
    # echo ${arrCardsBySuit_s[@]}
    result=0
-   
+
    # *********************************************************
    #  check 'Straight Flush' ...
    k=0
@@ -245,6 +245,8 @@ while [ $i -lt ${#arrPokerHands[@]} ]; do
       fi
       k=$(($k + 1))
    done
+
+   echo "check 'Straight Flush' ... $result"
 
    if (($result > 0)); then
       arrResult+=($result)
@@ -284,8 +286,10 @@ while [ $i -lt ${#arrPokerHands[@]} ]; do
          fi
       done
       result=$(multiplication $curResult 100000000)
-      result=$(round $result 1 0)      
+      result=$(round $result 1 0)
    fi
+
+   echo "check 'Four of a kind' ... $result"
 
    if (($result != 0)); then
       arrResult+=($result)
@@ -294,9 +298,50 @@ while [ $i -lt ${#arrPokerHands[@]} ]; do
    fi
    # *********************************************************
 
-   # echo ${arrResult[@]}
-   i=$(($i + 1))
-   break
+   # *********************************************************
+   #  check 'Full House' ...
+   curResult=0
+   curResult2=0
+   curFloatResult2=0
+   curResult3=0
+   for index in ${!arrCards[@]}; do
+      sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+      if (($sum == 3)); then
+         curResult3=$(($sizeArrCards - $index + 1))
+         break
+      fi
+   done
+
+   #if 'Three of a kind' wasn't found then it isn't 'Full House' ...
+   if (($curResult3 > 0)); then
+      for index in ${!arrCards[@]}; do
+         sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+         if (($sum == 2 && $curResult2 == 0)); then
+            curResult2=$(round $(($sizeArrCards - $index + 1)) 100 2)
+            curResult2=$(multiplication $curResult2 10000000)
+            curResult2=$(round $curResult2 1 0)
+            echo $curResult2
+            break
+         fi
+      done
+
+      if (($curResult2 > 0)); then
+         curResult3=$(multiplication $curResult3 10000000)
+         result=$(($curResult3 + $curResult2))
+      fi
+   fi
+
+   echo "check 'Full House' ... $result"
+
+   if (($result != 0)); then
+      arrResult+=($result)
+      i=$(($i + 1))
+      continue
+   fi
+   # *********************************************************
+
+   echo ${arrResult[@]}
+   # break
 done
 
 echo "arrResult - ${arrResult[@]}"
