@@ -1,12 +1,7 @@
 #!/bin/bash
 
-function round() {
-   echo "scale=$3;$1/$2" | bc -l
-   return
-}
-
-function multiplication() {
-   echo "$1*$2" | bc -l
+function getChar() {
+   echo ${arrChars[$1]}
    return
 }
 
@@ -92,7 +87,7 @@ function checkStraightFlush() {
    local arr=($@)
 
    size=${#arr[@]}
-   result=0
+   result=""
    i=0
    sum=0
    while [ $i -lt $size ]; do
@@ -102,21 +97,20 @@ function checkStraightFlush() {
       elif (($(($i + 4)) == $size)); then
          sum=$((${arr[$i]} + ${arr[$i + 1]} + ${arr[$i + 2]} + ${arr[$i + 3]} + ${arr[0]}))
          if (($sum == 5)); then
-            result=$(($size - $i + 1))
+            result=$(getChar $(($size - $i)))
             break
          fi
 
       else
          sum=$((${arr[$i]} + ${arr[$i + 1]} + ${arr[$i + 2]} + ${arr[$i + 3]} + ${arr[$i + 4]}))
          if (($sum == 5)); then
-            result=$(($size - $i + 1))
+            result=$(getChar $(($size - $i)))
             break
          fi
       fi
       i=$(($i + 1))
    done
-
-   echo $(($result * 100000000000000000))
+   echo $result
    return
 }
 
@@ -124,7 +118,7 @@ function checkFlush() {
    local arr=($@)
 
    size=${#arr[@]}
-   result=0
+   result=""
    i=0
    sum=0
    arrIndexes=()
@@ -141,23 +135,26 @@ function checkFlush() {
    done
 
    if (($sum == 5)); then
-      curResult1=$(($sizeArrCards - ${arrIndexes[0]} + 1))
-      curResult1=$(multiplication $curResult1 10000000000000)
+      result1=$(getChar $(($sizeArrCards - ${arrIndexes[0]})))
+      result2=$(getChar $(($sizeArrCards - ${arrIndexes[1]})))
+      result3=$(getChar $(($sizeArrCards - ${arrIndexes[2]})))
+      result4=$(getChar $(($sizeArrCards - ${arrIndexes[3]})))
+      result5=$(getChar $(($sizeArrCards - ${arrIndexes[4]})))
 
-      curResult2=$(round $(($sizeArrCards - ${arrIndexes[1]} + 1)) 100 2)
-      curResult2=$(multiplication $curResult2 10000000000000)
-      curResult2=$(round $curResult2 1 0)
-
-      result=$(($curResult1 + $curResult2))
+      result=$result1
+      result+=$result2
+      result+=$result3
+      result+=$result4
+      result+=$result5
    fi
-
-   echo $(($result))
+   echo $result
    return
 }
 
 arrGameTypes=("texas-holdem" "omaha-holdem" "five-card-draw")
 arrCards=("A" "K" "Q" "J" "T" "9" "8" "7" "6" "5" "4" "3" "2")
 arrSuits=("h" "d" "c" "s")
+arrChars=("A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N")
 
 sizeArrCards=${#arrCards[@]}
 
@@ -212,9 +209,8 @@ while read line; do
       i=$(($i + 1))
    done
 
-   arrResult=()
+   strResult=""
 
-   i=0
    for curPokerHand in ${arrPokerHands[@]}; do
       # echo $curPokerHand
 
@@ -251,7 +247,7 @@ while read line; do
          j=$(($j + 2))
       done
 
-      result=0
+      result=""
 
       # *********************************************************
       #  check 'Straight Flush' ...
@@ -260,90 +256,80 @@ while read line; do
          curArrCardsBySuit=${!arrCardsBySuit_a} # get current array by suit (for example, arrCardsBySuit_h ...)
 
          result=$(checkStraightFlush "${curArrCardsBySuit[@]}")
-         if (($result > 0)); then
+         if ((${#result} > 0)); then
             break
          fi
       done
 
       # echo "check 'Straight Flush' ... $result"
 
-      if (($result > 0)); then
-         arrResult+=($result)
+      if ((${#result} > 0)); then
+         strResult+="8$result"
          continue
       fi
       # *********************************************************
 
-      # *********************************************************
+      # # *********************************************************
       #  check 'Four of a kind' ...
-      curResult=0
-      for index in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+      for i in ${!arrCards[@]}; do
+         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
          if (($sum == 4)); then
-            curResult=$(($sizeArrCards - $index + 1))
-            arrCardsBySuit_h[$index]=0
-            arrCardsBySuit_d[$index]=0
-            arrCardsBySuit_c[$index]=0
-            arrCardsBySuit_s[$index]=0
+            result=$(getChar $(($sizeArrCards - $i)))
             break
          fi
       done
 
-      if (($curResult > 0)); then
+      if ((${#result} > 0)); then
          # find a card of the maximum rank ...
-         for index in ${!arrCards[@]}; do
-            sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
-            if (($sum > 0)); then
-               curResult+=$(round $(($sizeArrCards - $index + 1)) 100 2)
-               # echo $curResult
+         for i in ${!arrCards[@]}; do
+            sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
+            if (($sum > 0)) && (($sum != 4)); then
+               result+=$(getChar $(($sizeArrCards - $i)))
                break
             fi
          done
-         result=$(multiplication $curResult 10000000000000000)
-         result=$(round $result 1 0)
       fi
 
       # echo "check 'Four of a kind' ... $result"
 
-      if (($result != 0)); then
-         arrResult+=($result)
+      if ((${#result} > 0)); then
+         strResult+=" 7$result"
          continue
       fi
       # *********************************************************
 
       # *********************************************************
       #  check 'Full House' ...
-      curResult2=0
-      curResult3=0
-      for index in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+      result2=""
+      result3=""
+      for i in ${!arrCards[@]}; do
+         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
          if (($sum == 3)); then
-            curResult3=$(($sizeArrCards - $index + 1))
+            result3=$(getChar $(($sizeArrCards - $i)))
             break
          fi
       done
 
       #if 'Three of a kind' wasn't found then it isn't 'Full House' ...
-      if (($curResult3 > 0)); then
-         for index in ${!arrCards[@]}; do
-            sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
-            if (($sum == 2 && $curResult2 == 0)); then
-               curResult2=$(round $(($sizeArrCards - $index + 1)) 100 2)
-               curResult2=$(multiplication $curResult2 100000000000000)
-               curResult2=$(round $curResult2 1 0)
+      if ((${#result3} > 0)); then
+         for i in ${!arrCards[@]}; do
+            sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
+            if (($sum == 2)); then
+               result2=$(getChar $(($sizeArrCards - $i)))
                break
             fi
          done
 
-         if (($curResult2 > 0)); then
-            curResult3=$(multiplication $curResult3 100000000000000)
-            result=$(($curResult3 + $curResult2))
+         if ((${#result2} > 0)); then
+            result+=$result3
+            result+=$result2
          fi
       fi
 
       # echo "check 'Full House' ... $result"
 
-      if (($result != 0)); then
-         arrResult+=($result)
+      if ((${#result} > 0)); then
+         strResult+=" 6$result"
          continue
       fi
       # *********************************************************
@@ -355,25 +341,24 @@ while read line; do
          curArrCardsBySuit=${!arrCardsBySuit_a} # get current array by suit (for example, arrCardsBySuit_h ...)
 
          result=$(checkFlush "${curArrCardsBySuit[@]}")
-         if (($result > 0)); then
+         if ((${#result} > 0)); then
             break
          fi
       done
 
       # echo "check 'Flush' ... $result"
 
-      if (($result != 0)); then
-         arrResult+=($result)
+      if ((${#result} > 0)); then
+         strResult+=" 5$result"
          continue
       fi
       # *********************************************************
 
       # *********************************************************
       #  check 'Straight' ...
-      curResult=0
       curArrResult=()
-      for index in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+      for i in ${!arrCards[@]}; do
+         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
          curArrResult+=($sum)
       done
 
@@ -395,225 +380,168 @@ while read line; do
       done
 
       if (($curSum == 5)); then
-         result=$(($sizeArrCards - $curStartIndex + 1))
-         result=$(($result * 1000000000000))
+         result=$(getChar $(($sizeArrCards - $curStartIndex)))
       fi
 
       # echo "check 'Straight' ... $result"
 
-      if (($result != 0)); then
-         arrResult+=($result)
+      if ((${#result} > 0)); then
+         strResult+=" 4$result"
          continue
       fi
       # *********************************************************
 
       # *********************************************************
       #  check 'Three of a kind' ...
-      curResult21=0
-      curResult22=0
-      curResult3=0
-      for index in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+      result2=""
+      result3=""
+      for i in ${!arrCards[@]}; do
+         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
          if (($sum == 3)); then
-            curResult3=$(($sizeArrCards - $index + 1))
-            curResult3=$(($curResult3 * 100000000000))
-
-            arrCardsBySuit_h[$index]=0
-            arrCardsBySuit_d[$index]=0
-            arrCardsBySuit_c[$index]=0
-            arrCardsBySuit_s[$index]=0
+            result3=$(getChar $(($sizeArrCards - $i)))
             break
          fi
       done
 
       #if 'Three of a kind' was found ...
       q=0
-      if (($curResult3 > 0)); then
-         for index in ${!arrCards[@]}; do
-            sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
-            if (($sum > 0)); then
+      if ((${#result3} > 0)); then
+         for i in ${!arrCards[@]}; do
+            sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
+            if (($sum == 1)); then
                q=$(($q + 1))
-               if (($q == 1)); then
-                  curResult21=$(round $(($sizeArrCards - $index + 1)) 100 2)
-                  curResult21=$(multiplication $curResult21 100000000000)
-                  curResult21=$(round $curResult21 1 0)
+               result2+=$(getChar $(($sizeArrCards - $i)))
 
-               elif (($q == 2)); then
-                  curResult22=$(round $(($sizeArrCards - $index + 1)) 10000 4)
-                  curResult22=$(multiplication $curResult22 100000000000)
-                  curResult22=$(round $curResult22 1 0)
-
+               if (($q == 2)); then
                   break
                fi
             fi
          done
-         result=$(($curResult3 + $curResult21 + $curResult22))
+
+         result+=$result3
+         result+=$result2
       fi
 
       # echo "check 'Three of a kind' ... $result"
 
-      if (($result != 0)); then
-         arrResult+=($result)
+      if ((${#result} > 0)); then
+         strResult+=" 3$result"
          continue
       fi
+      # *********************************************************
 
       # *********************************************************
       #  check 'Two pairs' ...
-      curResult21=0
-      curResult22=0
-      curResult3=0
+      result2=""
+      result1=""
       q=0
-      for index in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+      for i in ${!arrCards[@]}; do
+         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
          if (($sum == 2)); then
             q=$(($q + 1))
-            if (($q == 1)); then
-               curResult21=$(($sizeArrCards - $index + 1))
-               curResult21=$(($curResult21 * 10000000000))
+            result2+=$(getChar $(($sizeArrCards - $i)))
 
-            elif (($q == 2)); then
-               curResult22=$(round $(($sizeArrCards - $index + 1)) 100 2)
-               curResult22=$(multiplication $curResult22 10000000000)
-               curResult22=$(round $curResult22 1 0)
-
+            if (($q == 2)); then
                break
             fi
          fi
       done
 
       if (($q == 2)); then
-         for index in ${!arrCards[@]}; do
-            sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+         for i in ${!arrCards[@]}; do
+            sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
             if (($sum == 1)); then
-               curResult3=$(round $(($sizeArrCards - $index + 1)) 10000 4)
-               curResult3=$(multiplication $curResult3 10000000000)
-               curResult3=$(round $curResult3 1 0)
+               result1=$(getChar $(($sizeArrCards - $i)))
                break
             fi
          done
-         result=$(($curResult3 + $curResult21 + $curResult22))
+
+         result+=$result2
+         result+=$result1
       fi
 
       # echo "check 'Two pairs' ... $result"
 
-      if (($result != 0)); then
-         arrResult+=($result)
+      if ((${#result} > 0)); then
+         strResult+=" 2$result"
          continue
       fi
-
       # *********************************************************
 
       # *********************************************************
       #  check 'Pair' ...
-      curResult11=0
-      curResult12=0
-      curResult13=0
-      curResult2=0
-      for index in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+      result1=""
+      result2=""
+      for i in ${!arrCards[@]}; do
+         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
          if (($sum == 2)); then
-            curResult2=$(($sizeArrCards - $index + 1))
-            curResult2=$(($curResult2 * 1000000000))
-
+            result2=$(getChar $(($sizeArrCards - $i)))
             break
          fi
       done
 
-      if (($curResult2 > 0)); then
+      if ((${#result2} > 0)); then
          q=0
-         for index in ${!arrCards[@]}; do
-            sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+         for i in ${!arrCards[@]}; do
+            sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
             if (($sum == 1)); then
                q=$(($q + 1))
-               if (($q == 1)); then
-                  curResult11=$(round $(($sizeArrCards - $index + 1)) 100 2)
-                  curResult11=$(multiplication $curResult11 1000000000)
-                  curResult11=$(round $curResult11 1 0)
+               result1+=$(getChar $(($sizeArrCards - $i)))
 
-               elif (($q == 2)); then
-                  curResult12=$(round $(($sizeArrCards - $index + 1)) 10000 4)
-                  curResult12=$(multiplication $curResult12 1000000000)
-                  curResult12=$(round $curResult12 1 0)
-
-               elif (($q == 3)); then
-                  curResult13=$(round $(($sizeArrCards - $index + 1)) 1000000 6)
-                  curResult13=$(multiplication $curResult13 1000000000)
-                  curResult13=$(round $curResult13 1 0)
-
+               if (($q == 3)); then
                   break
                fi
             fi
          done
-         result=$(($curResult2 + $curResult11 + $curResult12 + $curResult13))
+
+         result+=$result2
+         result+=$result1
       fi
 
       # echo "check 'Pairs' ... $result"
 
-      if (($result != 0)); then
-         arrResult+=($result)
+      if ((${#result} > 0)); then
+         strResult+=" 1$result"
          continue
       fi
-
       # *********************************************************
 
       # *********************************************************
       #  check 'High card' ...
-      curResult11=0
-      curResult12=0
-      curResult13=0
-      curResult14=0
-      curResult15=0
       q=0
-      for index in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$index]} + ${arrCardsBySuit_d[$index]} + ${arrCardsBySuit_c[$index]} + ${arrCardsBySuit_s[$index]}))
+      for i in ${!arrCards[@]}; do
+         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
          if (($sum == 1)); then
             q=$(($q + 1))
-            if (($q == 1)); then
-               curResult11=$(($sizeArrCards - $index + 1))
-               curResult11=$(($curResult11 * 100000000))
+            if (($sum == 1)); then
+               q=$(($q + 1))
+               result+=$(getChar $(($sizeArrCards - $i)))
 
-            elif (($q == 2)); then
-               curResult12=$(round $(($sizeArrCards - $index + 1)) 100 2)
-               curResult12=$(multiplication $curResult12 100000000)
-               curResult12=$(round $curResult12 1 0)
-
-            elif (($q == 3)); then
-               curResult13=$(round $(($sizeArrCards - $index + 1)) 10000 4)
-               curResult13=$(multiplication $curResult13 100000000)
-               curResult13=$(round $curResult13 1 0)
-
-            elif (($q == 4)); then
-               curResult14=$(round $(($sizeArrCards - $index + 1)) 1000000 6)
-               curResult14=$(multiplication $curResult14 100000000)
-               curResult14=$(round $curResult14 1 0)
-
-            elif (($q == 5)); then
-               curResult15=$(round $(($sizeArrCards - $index + 1)) 100000000 8)
-               curResult15=$(multiplication $curResult15 100000000)
-               curResult15=$(round $curResult15 1 0)
-
-               break
+               if (($q == 5)); then
+                  break
+               fi
             fi
          fi
       done
-      result=$(($curResult11 + $curResult12 + $curResult13 + $curResult14 + $curResult15))
 
       # echo "check 'High card' ... $result"
 
-      if (($result != 0)); then
-         arrResult+=($result)
+      if ((${#result} > 0)); then
+         strResult+=" 0$result"
          continue
       fi
       # *********************************************************
    done
-
+   
+   IFS=" " read -ra arrResult <<<"$strResult" # get the array of words ...
+   
    # sort by value ...
    sizeArrResult=${#arrResult[@]}
    for i in ${!arrResult[@]}; do
       curSize=$(($sizeArrResult - $i - 1))
       j=0
       while [ $j -lt $curSize ]; do
-         if ((${arrResult[$j]} > ${arrResult[$j + 1]})); then
+         if [[ ${arrResult[$j]} > ${arrResult[$j + 1]} ]]; then
             curResult=${arrResult[j]}
             arrResult[$j]=${arrResult[$j + 1]}
             arrResult[$j + 1]=$curResult
