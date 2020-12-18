@@ -173,6 +173,7 @@ while read line; do
    [[ $gameType == "five-card-draw" ]] && startIndex=1 || startIndex=2
    [[ $gameType == "five-card-draw" ]] && boardCards="" || boardCards=${arrWords[1]} # get current 5 board cards for 'texas-holdem' and 'omaha-holdem' ...
 
+   # get the number of cards in the poker hand ...
    numberPokerHands=2
    if [ $gameType == "omaha-holdem" ]; then
       numberPokerHands=4
@@ -180,11 +181,13 @@ while read line; do
       numberPokerHands=5
    fi
 
+   # check the board cards ...
    strCheckCards=$boardCards
    if [ "$boardCards" != "" ]; then
       strError+=$(checkDraw "5" "$boardCards" "Board cards")
    fi
 
+   # check poker hands ...
    i=$startIndex
    while [ $i -lt ${#arrWords[@]} ]; do
       strError+=$(checkDraw "$numberPokerHands" "${arrWords[i]}" "Poker hands")
@@ -192,6 +195,7 @@ while read line; do
       i=$(($i + 1))
    done
 
+   # check the cards ...
    strError+=$(checkStrCards "$strCheckCards")
 
    if [ "$strError" != "" ]; then
@@ -201,7 +205,7 @@ while read line; do
 
    # ************************************************************************
 
-   arrPokerHands=()
+   arrPokerHands=() # array of poker hands ...
 
    i=$startIndex
    while [ $i -lt ${#arrWords[@]} ]; do
@@ -214,12 +218,13 @@ while read line; do
    for curPokerHand in ${arrPokerHands[@]}; do
       # echo $curPokerHand
 
+      # arrage the cards by suit ...
       arrCardsBySuit_h=(0 0 0 0 0 0 0 0 0 0 0 0 0) # h ...
       arrCardsBySuit_d=(0 0 0 0 0 0 0 0 0 0 0 0 0) # d ...
       arrCardsBySuit_c=(0 0 0 0 0 0 0 0 0 0 0 0 0) # c ...
       arrCardsBySuit_s=(0 0 0 0 0 0 0 0 0 0 0 0 0) # s ...
 
-      curCards=$boardCards
+      curCards=$boardCards # all cards (board cards + current poker hand) ...
       curCards+=$curPokerHand
 
       j=0
@@ -532,9 +537,9 @@ while read line; do
       fi
       # *********************************************************
    done
-   
+
    IFS=" " read -ra arrResult <<<"$strResult" # get the array of words ...
-   
+
    # sort by value ...
    sizeArrResult=${#arrResult[@]}
    for i in ${!arrResult[@]}; do
@@ -546,6 +551,7 @@ while read line; do
             arrResult[$j]=${arrResult[$j + 1]}
             arrResult[$j + 1]=$curResult
 
+            # sort poker hands ...
             curPokerHand=${arrPokerHands[j]}
             arrPokerHands[$j]=${arrPokerHands[$j + 1]}
             arrPokerHands[$j + 1]=$curPokerHand
