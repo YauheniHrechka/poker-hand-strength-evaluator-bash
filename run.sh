@@ -288,8 +288,7 @@ while read line; do
 
       result=""
 
-      # *********************************************************
-      #  check 'Straight Flush' ...
+      #  check 'Straight Flush' ... *****************************
       for suit in ${arrSuits[@]}; do
          arrCardsBySuit_a=arrCardsBySuit_$suit[@]
          curArrCardsBySuit=${!arrCardsBySuit_a} # get current array by suit (for example, arrCardsBySuit_h ...)
@@ -306,8 +305,7 @@ while read line; do
       fi
       # *********************************************************
 
-      # # *********************************************************
-      #  check 'Four of a kind' ...
+      #  check 'Four of a kind' ... *****************************
       result=$(getMainCards false 4 0) # get main cards (isCounter = false sum = 4 counter = 0) ...
 
       if ((${#result} > 0)); then
@@ -326,9 +324,8 @@ while read line; do
          continue
       fi
       # *********************************************************
-
-      # *********************************************************
-      #  check 'Full House' ...
+      
+      #  check 'Full House' ... *********************************
       result3=$(getMainCards false 3 0) # get main cards (isCounter = false sum = 3 counter = 0) ...
 
       #if 'Three of a kind' wasn't found then it isn't 'Full House' ...
@@ -346,9 +343,8 @@ while read line; do
          continue
       fi
       # *********************************************************
-
-      # *********************************************************
-      #  check 'Flush' ...
+      
+      #  check 'Flush' ... **************************************
       for suit in ${arrSuits[@]}; do
          arrCardsBySuit_a=arrCardsBySuit_$suit[@]
          curArrCardsBySuit=${!arrCardsBySuit_a} # get current array by suit (for example, arrCardsBySuit_h ...)
@@ -364,9 +360,8 @@ while read line; do
          continue
       fi
       # *********************************************************
-
-      # *********************************************************
-      #  check 'Straight' ...
+      
+      #  check 'Straight' ... ***********************************
       curArrResult=()
       for i in ${!arrCards[@]}; do
          sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
@@ -405,9 +400,8 @@ while read line; do
          continue
       fi
       # *********************************************************
-
-      # *********************************************************
-      #  check 'Three of a kind' ...
+       
+      #  check 'Three of a kind' ... ****************************
       result3=$(getMainCards false 3 0) # get main cards (isCounter = false sum = 3 counter = 0) ...
 
       #if 'Three of a kind' was found ...
@@ -423,9 +417,8 @@ while read line; do
          continue
       fi
       # *********************************************************
-
-      # *********************************************************
-      #  check 'Two pairs' ...
+      
+      #  check 'Two pairs' ... **********************************
       result2=$(getMainCards true 2 2) # get main cards (isCounter = true sum = 2 counter = 2) ...
 
       if ((${#result2} > 0)); then
@@ -441,8 +434,7 @@ while read line; do
       fi
       # *********************************************************
 
-      # *********************************************************
-      #  check 'Pair' ...
+      #  check 'Pair' ... ***************************************
       result2=$(getMainCards false 2 0) # get main cards (isCounter = false sum = 2 counter = 0) ...
 
       if ((${#result2} > 0)); then
@@ -458,8 +450,7 @@ while read line; do
       fi
       # *********************************************************
 
-      # *********************************************************
-      #  check 'High card' ...
+      #  check 'High card' ... **********************************
       result=$(getMainCards true 1 5) # get main cards (isCounter = true sum = 1 counter = 5) ...
 
       if ((${#result} > 0)); then
@@ -491,5 +482,17 @@ while read line; do
       done
    done
 
-   echo ${arrPokerHands[@]}
+   # put '=' between the same poker hands ...
+   strOut=${arrPokerHands[0]}
+   i=1
+   while [ $i -lt ${#arrResult[@]} ]; do
+      if [[ ${arrResult[$i]} == ${arrResult[$i - 1]} ]]; then
+         strOut+="=${arrPokerHands[$i]}"
+      else
+         strOut+=" ${arrPokerHands[$i]}"
+      fi
+      ((i++))
+   done
+
+   echo $strOut
 done
