@@ -16,7 +16,7 @@ function getMainCards() {
       for i in ${!arrCards[@]}; do
          curSum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
          if (($curSum == $sum)); then
-            q=$(($q + 1))
+            ((q++))
             result+=$(getChar $(($sizeArrCards - $i)))
 
             if (($q == $counter)); then
@@ -48,7 +48,7 @@ function elementInArray() {
    isFound=false
 
    for i in ${arr[@]}; do
-      if [ $i == $element ]; then
+      if [ "$i" == "$element" ]; then
          isFound=true
          break
       fi
@@ -144,7 +144,7 @@ function checkStraightFlush() {
             break
          fi
       fi
-      i=$(($i + 1))
+      ((i++))
    done
    echo $result
    return
@@ -160,14 +160,14 @@ function checkFlush() {
    arrIndexes=()
    while [ $i -lt $size ]; do
       if ((${arr[$i]} == 1)); then
-         sum=$(($sum + 1))
+         ((sum++))
          arrIndexes+=($i)
 
          if (($sum == 5)); then
             break
          fi
       fi
-      i=$(($i + 1))
+      ((i++))
    done
 
    if (($sum == 5)); then
@@ -228,7 +228,7 @@ while read line; do
    while [ $i -lt ${#arrWords[@]} ]; do
       strError+=$(checkDraw "$numberPokerHands" "${arrWords[i]}" "Poker hands")
       strCheckCards+=${arrWords[i]}
-      i=$(($i + 1))
+      ((i++))
    done
 
    # check the cards ...
@@ -246,7 +246,7 @@ while read line; do
    i=$startIndex
    while [ $i -lt ${#arrWords[@]} ]; do
       arrPokerHands+=(${arrWords[i]})
-      i=$(($i + 1))
+      ((i++))
    done
 
    strResult=""
@@ -380,7 +380,7 @@ while read line; do
             if (($curStartIndex < 0)); then
                curStartIndex=$i
             fi
-            curSum=$(($curSum + 1))
+            ((curSum++))
             if (($curSum == 5)); then
                break
             fi
@@ -389,6 +389,12 @@ while read line; do
             curSum=0
          fi
       done
+
+      if (($curSum == 4)) && (($curStartIndex > 0)); then # 5 4 3 2 A ...
+         if ((${curArrResult[0]} > 0)); then
+            ((curSum++))
+         fi
+      fi
 
       if (($curSum == 5)); then
          result=$(getChar $(($sizeArrCards - $curStartIndex)))
@@ -481,7 +487,7 @@ while read line; do
             arrPokerHands[$j]=${arrPokerHands[$j + 1]}
             arrPokerHands[$j + 1]=$curPokerHand
          fi
-         j=$(($j + 1))
+         ((j++))
       done
    done
 
