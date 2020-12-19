@@ -5,14 +5,50 @@ function getChar() {
    return
 }
 
+function getMainCards() {
+   local isCounter=$1
+   local sum=$2
+   local counter=$3
+   local result=""
+
+   if $isCounter; then
+      q=0
+      for i in ${!arrCards[@]}; do
+         curSum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
+         if (($curSum == $sum)); then
+            q=$(($q + 1))
+            result+=$(getChar $(($sizeArrCards - $i)))
+
+            if (($q == $counter)); then
+               break
+            fi
+         fi
+      done
+      if (($q != $counter)); then
+         result=""
+      fi
+   else
+      for i in ${!arrCards[@]}; do
+         curSum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
+         if (($curSum == $sum)); then
+            result=$(getChar $(($sizeArrCards - $i)))
+            break
+         fi
+      done
+   fi
+
+   echo $result
+   return
+}
+
 function elementInArray() {
    local element=$1
    shift
    local arr=($@)
    isFound=false
 
-   for i in "${arr[@]}"; do
-      if [ "$i" == "$element" ]; then
+   for i in ${arr[@]}; do
+      if [ $i == $element ]; then
          isFound=true
          break
       fi
@@ -28,9 +64,9 @@ function getIndexInArray() {
    local arr=($@)
    curIndex=0
 
-   for index in "${!arr[@]}"; do
-      if [ "${arr[$index]}" == "$element" ]; then
-         curIndex=$index
+   for i in ${!arr[@]}; do
+      if [ ${arr[$i]} == $element ]; then
+         curIndex=$i
          break
       fi
    done
@@ -95,7 +131,7 @@ function checkStraightFlush() {
          break
 
       elif (($(($i + 4)) == $size)); then
-         sum=$((${arr[$i]} + ${arr[$i + 1]} + ${arr[$i + 2]} + ${arr[$i + 3]} + ${arr[0]}))
+         sum=$((${arr[$i]} + ${arr[$i + 1]} + ${arr[$i + 2]} + ${arr[$i + 3]} + ${arr[0]})) # 5 4 3 2 A ...
          if (($sum == 5)); then
             result=$(getChar $(($size - $i)))
             break
@@ -216,7 +252,6 @@ while read line; do
    strResult=""
 
    for curPokerHand in ${arrPokerHands[@]}; do
-      # echo $curPokerHand
 
       # arrage the cards by suit ...
       arrCardsBySuit_h=(0 0 0 0 0 0 0 0 0 0 0 0 0) # h ...
@@ -230,7 +265,6 @@ while read line; do
       j=0
       while [ $j -lt ${#curCards} ]; do
          curFullCard=${curCards:$j:2} # get the current full card (for example, 4c) ...
-         # echo $curFullCard
 
          curCard=${curFullCard:0:1}                               # get the current card ...
          curSuit=${curFullCard:1:2}                               # get the suit of the current cards ...
@@ -266,8 +300,6 @@ while read line; do
          fi
       done
 
-      # echo "check 'Straight Flush' ... $result"
-
       if ((${#result} > 0)); then
          strResult+="8$result"
          continue
@@ -276,13 +308,7 @@ while read line; do
 
       # # *********************************************************
       #  check 'Four of a kind' ...
-      for i in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-         if (($sum == 4)); then
-            result=$(getChar $(($sizeArrCards - $i)))
-            break
-         fi
-      done
+      result=$(getMainCards false 4 0) # get main cards (isCounter = false sum = 4 counter = 0) ...
 
       if ((${#result} > 0)); then
          # find a card of the maximum rank ...
@@ -295,8 +321,6 @@ while read line; do
          done
       fi
 
-      # echo "check 'Four of a kind' ... $result"
-
       if ((${#result} > 0)); then
          strResult+=" 7$result"
          continue
@@ -305,33 +329,17 @@ while read line; do
 
       # *********************************************************
       #  check 'Full House' ...
-      result2=""
-      result3=""
-      for i in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-         if (($sum == 3)); then
-            result3=$(getChar $(($sizeArrCards - $i)))
-            break
-         fi
-      done
+      result3=$(getMainCards false 3 0) # get main cards (isCounter = false sum = 3 counter = 0) ...
 
       #if 'Three of a kind' wasn't found then it isn't 'Full House' ...
       if ((${#result3} > 0)); then
-         for i in ${!arrCards[@]}; do
-            sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-            if (($sum == 2)); then
-               result2=$(getChar $(($sizeArrCards - $i)))
-               break
-            fi
-         done
+         result2=$(getMainCards false 2 0) # get main cards (isCounter = false sum = 2 counter = 0) ...
 
          if ((${#result2} > 0)); then
             result+=$result3
             result+=$result2
          fi
       fi
-
-      # echo "check 'Full House' ... $result"
 
       if ((${#result} > 0)); then
          strResult+=" 6$result"
@@ -350,8 +358,6 @@ while read line; do
             break
          fi
       done
-
-      # echo "check 'Flush' ... $result"
 
       if ((${#result} > 0)); then
          strResult+=" 5$result"
@@ -388,8 +394,6 @@ while read line; do
          result=$(getChar $(($sizeArrCards - $curStartIndex)))
       fi
 
-      # echo "check 'Straight' ... $result"
-
       if ((${#result} > 0)); then
          strResult+=" 4$result"
          continue
@@ -398,36 +402,15 @@ while read line; do
 
       # *********************************************************
       #  check 'Three of a kind' ...
-      result2=""
-      result3=""
-      for i in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-         if (($sum == 3)); then
-            result3=$(getChar $(($sizeArrCards - $i)))
-            break
-         fi
-      done
+      result3=$(getMainCards false 3 0) # get main cards (isCounter = false sum = 3 counter = 0) ...
 
       #if 'Three of a kind' was found ...
-      q=0
       if ((${#result3} > 0)); then
-         for i in ${!arrCards[@]}; do
-            sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-            if (($sum == 1)); then
-               q=$(($q + 1))
-               result2+=$(getChar $(($sizeArrCards - $i)))
-
-               if (($q == 2)); then
-                  break
-               fi
-            fi
-         done
+         result2=$(getMainCards true 1 2) # get main cards (isCounter = true sum = 1 counter = 2) ...
 
          result+=$result3
          result+=$result2
       fi
-
-      # echo "check 'Three of a kind' ... $result"
 
       if ((${#result} > 0)); then
          strResult+=" 3$result"
@@ -437,35 +420,14 @@ while read line; do
 
       # *********************************************************
       #  check 'Two pairs' ...
-      result2=""
-      result1=""
-      q=0
-      for i in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-         if (($sum == 2)); then
-            q=$(($q + 1))
-            result2+=$(getChar $(($sizeArrCards - $i)))
+      result2=$(getMainCards true 2 2) # get main cards (isCounter = true sum = 2 counter = 2) ...
 
-            if (($q == 2)); then
-               break
-            fi
-         fi
-      done
-
-      if (($q == 2)); then
-         for i in ${!arrCards[@]}; do
-            sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-            if (($sum == 1)); then
-               result1=$(getChar $(($sizeArrCards - $i)))
-               break
-            fi
-         done
+      if ((${#result2} > 0)); then
+         result1=$(getMainCards false 1 0) # get main cards (isCounter = false sum = 1 counter = 0) ...
 
          result+=$result2
          result+=$result1
       fi
-
-      # echo "check 'Two pairs' ... $result"
 
       if ((${#result} > 0)); then
          strResult+=" 2$result"
@@ -475,35 +437,14 @@ while read line; do
 
       # *********************************************************
       #  check 'Pair' ...
-      result1=""
-      result2=""
-      for i in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-         if (($sum == 2)); then
-            result2=$(getChar $(($sizeArrCards - $i)))
-            break
-         fi
-      done
+      result2=$(getMainCards false 2 0) # get main cards (isCounter = false sum = 2 counter = 0) ...
 
       if ((${#result2} > 0)); then
-         q=0
-         for i in ${!arrCards[@]}; do
-            sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-            if (($sum == 1)); then
-               q=$(($q + 1))
-               result1+=$(getChar $(($sizeArrCards - $i)))
-
-               if (($q == 3)); then
-                  break
-               fi
-            fi
-         done
+         result1=$(getMainCards true 1 3) # get main cards (isCounter = true sum = 1 counter = 3) ...
 
          result+=$result2
          result+=$result1
       fi
-
-      # echo "check 'Pairs' ... $result"
 
       if ((${#result} > 0)); then
          strResult+=" 1$result"
@@ -513,23 +454,7 @@ while read line; do
 
       # *********************************************************
       #  check 'High card' ...
-      q=0
-      for i in ${!arrCards[@]}; do
-         sum=$((${arrCardsBySuit_h[$i]} + ${arrCardsBySuit_d[$i]} + ${arrCardsBySuit_c[$i]} + ${arrCardsBySuit_s[$i]}))
-         if (($sum == 1)); then
-            q=$(($q + 1))
-            if (($sum == 1)); then
-               q=$(($q + 1))
-               result+=$(getChar $(($sizeArrCards - $i)))
-
-               if (($q == 5)); then
-                  break
-               fi
-            fi
-         fi
-      done
-
-      # echo "check 'High card' ... $result"
+      result=$(getMainCards true 1 5) # get main cards (isCounter = true sum = 1 counter = 5) ...
 
       if ((${#result} > 0)); then
          strResult+=" 0$result"
