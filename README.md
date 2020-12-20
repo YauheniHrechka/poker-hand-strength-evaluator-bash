@@ -7,7 +7,9 @@
 
 ### `Start project`
 
+```
 run.sh < test-cases.txt > solutions.txt
+```
 
 ## Description
 
