@@ -18,13 +18,15 @@ A matrix is created for each poker hand and board cards.
 In the beginning, each value is "0".
 For each card, the value is "1".
 
-For example, "4cKs4h8s7s Ad4s"
+For example, `4cKs4h8s7s Ad4s`
 
-* arrCards=("A" "K" "Q" "J" "T" "9" "8" "7" "6" "5" "4" "3" "2")
-* "h"   0   0   0   0   0   0   0   0   0   0   1   0   0
-* "d"   1   0   0   0   0   0   0   0   0   0   0   0   0
-* "c"   0   0   0   0   0   0   0   0   0   0   1   0   0
-* "s"   0   1   0   0   0   0   1   1   0   0   1   0   0
+```
+     "A" "K" "Q" "J" "T" "9" "8" "7" "6" "5" "4" "3" "2")
+"h"   0   0   0   0   0   0   0   0   0   0   1   0   0
+"d"   1   0   0   0   0   0   0   0   0   0   0   0   0
+"c"   0   0   0   0   0   0   0   0   0   0   1   0   0
+"s"   0   1   0   0   0   0   1   1   0   0   1   0   0
+```
 
 ## Search for combinations
 
@@ -75,27 +77,29 @@ The sum of the 5 highest cards of any suit (row) is 5.
 
 * [combination number (from "8" to "0")][value by index of the highest card of the combination]
 
+```
 arrChars=("A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N")
+```
 
-For example, "4cKs4h8s7s Ad4s"
-
+For example, `4cKs4h8s7s Ad4s`
+```
 4c4h4sAdKs ("Three of a kind")
-
-strResult = "3DNM"
+strResult = 3DNM
+```
 
 * 3 - "Three of a kind"
 * D - 4c4h4s
 * N - Ad
 * M - Ks
 
-For example, "4cKs4h8s7s Ad4s Ac4d As9s KhKd 5d6d"
+For example, `4cKs4h8s7s Ad4s Ac4d As9s KhKd 5d6d`
 
 ```
  arrPokerHands = Ad4s Ac4d As9s KhKd 5d6d
      strResult = 3DNM 3DNM 5NMIHG 6MD 4H
 ```
 
-2. Convert the string "strResult" to the array "arrResult"
+2. Convert the string `strResult` to the array `arrResult`
 
 3. Ascending sort
 
