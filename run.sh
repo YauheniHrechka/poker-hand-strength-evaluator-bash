@@ -370,7 +370,7 @@ while read line; do
 
       curStartIndex=-1
       curSum=0
-      for i in ${!curArrResult[@]}; do
+      for i in ${!curArrResult[@]}; do # search for 5 consecutive numbers of the different suits ...
          if ((${curArrResult[$i]} > 0)); then
             if (($curStartIndex < 0)); then
                curStartIndex=$i
