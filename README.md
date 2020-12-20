@@ -80,6 +80,7 @@ arrChars=("A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N")
 For example, "4cKs4h8s7s Ad4s"
 
 4c4h4sAdKs ("Three of a kind")
+
 strResult = "3DNM"
 
 * 3 - "Three of a kind"
@@ -89,19 +90,24 @@ strResult = "3DNM"
 
 For example, "4cKs4h8s7s Ad4s Ac4d As9s KhKd 5d6d"
 
-* arrPokerHands = Ad4s Ac4d As9s KhKd 5d6d
-*     strResult = 3DNM 3DNM 5NMIHG 6MD 4H
+```
+ arrPokerHands = Ad4s Ac4d As9s KhKd 5d6d
+     strResult = 3DNM 3DNM 5NMIHG 6MD 4H
+```
 
 2. Convert the string "strResult" to the array "arrResult"
 
 3. Ascending sort
-    
-* arrPokerHands = Ad4s Ac4d 5d6d As9s KhKd
-*     arrResult = 3DNM 3DNM 4H 5NMIHG 6MD
 
+```    
+arrPokerHands = Ad4s Ac4d 5d6d As9s KhKd
+    arrResult = 3DNM 3DNM 4H 5NMIHG 6MD
+```
 4. Put '=' between the same poker 
 
-* Ad4s=Ac4d 5d6d As9s KhKd
+```
+Ad4s=Ac4d 5d6d As9s KhKd
+```
 
 ## Errors
 
