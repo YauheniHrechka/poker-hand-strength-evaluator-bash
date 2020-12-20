@@ -1,9 +1,9 @@
 
 ## Implementation
 
-* "texas-holdem" - done
-* "omaha-holdem" - works like "texas-holdem" (without from 3 out of 5 board cards and 2 out of 4 hand cards)
-* "five-card-draw" - done
+* `"texas-holdem"` - done
+* `"omaha-holdem"` - works like `"texas-holdem"` (without from 3 out of 5 board cards and 2 out of 4 hand cards)
+* `"five-card-draw"` - done
 
 ### `Start project`
 
@@ -30,7 +30,7 @@ For example, `4cKs4h8s7s Ad4s`
 
 ## Search for combinations
 
-Search for combinations from "Straight Flush" to "High card".
+Search for combinations from `"Straight Flush"` to `"High card"`.
 
 ### `Straight Flush`
 
@@ -73,9 +73,10 @@ and three highest cards of any suit (value "1").
 
 The sum of the 5 highest cards of any suit (row) is 5.
 
-1. After that, each result is added to "strResult" in the following form:
-
-* [combination number (from "8" to "0")][value by index of the highest card of the combination]
+* After that, each result is added to `strResult` in the following form:
+```
+[combination number (from "8" to "0")][value by index of the highest card of the combination]
+```
 
 ```
 arrChars=("A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N")
@@ -85,12 +86,12 @@ For example, `4cKs4h8s7s Ad4s`
 ```
 4c4h4sAdKs ("Three of a kind")
 strResult = 3DNM
-```
 
-* 3 - "Three of a kind"
-* D - 4c4h4s
-* N - Ad
-* M - Ks
+3 - "Three of a kind"
+D - 4c4h4s
+N - Ad
+M - Ks
+```
 
 For example, `4cKs4h8s7s Ad4s Ac4d As9s KhKd 5d6d`
 
@@ -99,15 +100,15 @@ For example, `4cKs4h8s7s Ad4s Ac4d As9s KhKd 5d6d`
      strResult = 3DNM 3DNM 5NMIHG 6MD 4H
 ```
 
-2. Convert the string `strResult` to the array `arrResult`
+* Convert the string `strResult` to the array `arrResult`
 
-3. Ascending sort
+* Ascending sort
 
 ```    
 arrPokerHands = Ad4s Ac4d 5d6d As9s KhKd
     arrResult = 3DNM 3DNM 4H 5NMIHG 6MD
 ```
-4. Put '=' between the same poker 
+* Put '=' between the same poker 
 
 ```
 Ad4s=Ac4d 5d6d As9s KhKd
