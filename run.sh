@@ -83,7 +83,7 @@ function checkDraw() {
    strError=""
    curNumber=$(($number * 2))
    if [[ $curNumber != ${#strCards} ]]; then
-      strError="Error: The $name '$strCards' can be $number. "
+      strError="Error: The $name '$strCards' must be $number. "
    fi
    echo $strError
    return
@@ -287,7 +287,7 @@ while read line; do
       done
 
       result=""
-
+       
       #  check 'Straight Flush' ... *****************************
       for suit in ${arrSuits[@]}; do
          arrCardsBySuit_a=arrCardsBySuit_$suit[@]
