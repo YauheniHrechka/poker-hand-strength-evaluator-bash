@@ -1,9 +1,9 @@
 
 ## Implementation
 
-"texas-holdem" - done
-"omaha-holdem" - works like "texas-holdem" (without from 3 out of 5 board cards and 2 out of 4 hand cards)
-"five-card-draw" - done
+* "texas-holdem" - done
+* "omaha-holdem" - works like "texas-holdem" (without from 3 out of 5 board cards and 2 out of 4 hand cards)
+* "five-card-draw" - done
 
 ### `Start project`
 
@@ -21,10 +21,10 @@ For each card, the value is "1".
 For example, "4cKs4h8s7s Ad4s"
 
      "A" "K" "Q" "J" "T" "9" "8" "7" "6" "5" "4" "3" "2"
-"h"   0   0   0   0   0   0   0   0   0   0   1   0   0
-"d"   1   0   0   0   0   0   0   0   0   0   0   0   0
-"c"   0   0   0   0   0   0   0   0   0   0   1   0   0
-"s"   0   1   0   0   0   0   1   1   0   0   1   0   0
+* "h"   0   0   0   0   0   0   0   0   0   0   1   0   0
+* "d"   1   0   0   0   0   0   0   0   0   0   0   0   0
+* "c"   0   0   0   0   0   0   0   0   0   0   1   0   0
+* "s"   0   1   0   0   0   0   1   1   0   0   1   0   0
 
 ## Search for combinations
 
