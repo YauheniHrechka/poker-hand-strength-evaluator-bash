@@ -83,7 +83,7 @@ function checkDraw() {
    strError=""
    curNumber=$(($number * 2))
    if [[ $curNumber != ${#strCards} ]]; then
-      strError="Error: The $name '$strCards' must be $number. "
+      strError="Error: The $name '$strCards' must contain $number cards. "
    fi
    echo $strError
    return
@@ -194,7 +194,7 @@ arrChars=("A" "B" "C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N")
 
 sizeArrCards=${#arrCards[@]}
 
-while read line; do
+while IFS= read -r line || [ -n "$line" ]; do
    IFS=" " read -ra arrWords <<<"$line" # get the array of words ...
 
    strError=""
@@ -226,7 +226,7 @@ while read line; do
    # check poker hands ...
    i=$startIndex
    while [ $i -lt ${#arrWords[@]} ]; do
-      strError+=$(checkDraw "$numberPokerHands" "${arrWords[i]}" "Poker hands")
+      strError+=$(checkDraw "$numberPokerHands" "${arrWords[i]}" "Poker hand")
       strCheckCards+=${arrWords[i]}
       ((i++))
    done
